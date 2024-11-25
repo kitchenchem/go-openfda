@@ -10,6 +10,8 @@ import (
 	"net/url"
 	"strings"
 	"time"
+
+	"github.com/google/go-querystring/query"
 )
 
 const (
@@ -72,18 +74,65 @@ func (c *Client) setBaseURL(urlStr string) error {
 	return nil
 }
 
-func (c *Client) NewRequest(path string) (*http.Request, error) {
+// func (c *Client) NewRequest(path string) (*http.Request, error) {
+// 	urlBuild := *c.baseUrl
+// 	nonescaped, err := url.PathUnescape(path)
+// 	if err != nil {
+// 		return nil, err
+// 	}
+
+// 	urlBuild.RawPath = c.baseUrl.Path + path
+// 	fmt.Printf("raw: %s\n", urlBuild.RawPath)
+// 	urlBuild.Path = c.baseUrl.Path + nonescaped
+// 	fmt.Printf("path: %s\n", urlBuild.Path)
+// 	fmt.Printf("str: %s\n", urlBuild.String())
+
+// 	fmt.Printf("url built: %s      --------", &urlBuild)
+
+// 	reqHeaders := make(http.Header)
+// 	reqHeaders.Set("Accept", "application/json")
+
+// 	req, err := http.NewRequest("GET", urlBuild.String(), nil)
+// 	if err != nil {
+// 		return nil, err
+// 	}
+
+// 	for k, v := range reqHeaders {
+// 		req.Header[k] = v
+// 	}
+
+// 	return req, nil
+// }
+
+func (c *Client) NewRequest(path string, opt interface{}) (*http.Request, error) {
 	urlBuild := *c.baseUrl
-	nonescaped, err := url.PathUnescape(path)
+
+	pathAndQuery := strings.SplitN(path, "?", 2)
+	basePath := pathAndQuery[0]
+
+	nonescaped, err := url.PathUnescape(basePath)
 	if err != nil {
 		return nil, err
 	}
-
-	urlBuild.RawPath = c.baseUrl.Path + path
 	urlBuild.Path = c.baseUrl.Path + nonescaped
+
+	if len(pathAndQuery) > 1 {
+		urlBuild.RawQuery = pathAndQuery[1]
+	}
 
 	reqHeaders := make(http.Header)
 	reqHeaders.Set("Accept", "application/json")
+	fmt.Printf("str: %s\n", urlBuild.String())
+
+	// opt represents options available to en endpoint //TODO
+	if opt != nil {
+		q, err := query.Values(opt)
+		if err != nil {
+			return nil, err
+		}
+		urlBuild.RawQuery = q.Encode()
+		fmt.Printf("url string: %s", urlBuild.String())
+	}
 
 	req, err := http.NewRequest("GET", urlBuild.String(), nil)
 	if err != nil {
@@ -106,20 +155,20 @@ func newResponse(r *http.Response) *Response {
 	return response
 }
 
-func (c *Client) Do(req *http.Request) (*http.Response, error) {
+func (c *Client) Do(req *http.Request, w interface{}) (*Response, error) {
 
+	// if w implements io writer interface for the response body to be written to it without trying to first decode it.
 	var apiKey string
+
 	if c.key != "" {
 		apiKey = c.key
-		req.Header.Set("Authorization", "Key "+apiKey) // TODO make to be the correct type for fda
+		req.Header.Set("Authorization", "Key "+apiKey) // TODO make to be the correct header text for fda
 	}
 
 	resp, err := c.client.Do(req)
 	if err != nil {
 		return nil, err
 	}
-
-	fmt.Print(resp.Body)
 
 	//TODO handling for daily limit breach w/ and w/out token.
 
@@ -129,8 +178,16 @@ func (c *Client) Do(req *http.Request) (*http.Response, error) {
 	//TODO make response type, methods.
 
 	response := newResponse(resp)
-	fmt.Printf("newResp: %v", response)
-	return resp, nil
+
+	if w != nil {
+		if x, ok := w.(io.Writer); ok {
+			_, err = io.Copy(x, resp.Body) // need original response, not Response type
+		} else {
+			err = json.NewDecoder(resp.Body).Decode(w) //same here
+		}
+	}
+
+	return response, err
 }
 
 type ErrorResponse struct {
@@ -169,9 +226,10 @@ func CheckResponse(r *http.Response) error {
 		var raw interface{}
 		if err := json.Unmarshal(data, &raw); err != nil {
 			errorResponse.Message = fmt.Sprintf("failed to parse unknown error format: %s", data)
-		}
+		} else {
 
-		return fmt.Errorf("failed to parse unexpected error type: %T", raw)
+			return fmt.Errorf("failed to parse unexpected error type: %T", raw)
+		}
 	}
 
 	return errorResponse
