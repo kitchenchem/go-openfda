@@ -77,3 +77,12 @@ type USAgent struct {
 	StateCode        string `json:"state_code,omitempty"`
 	ZipCode          string `json:"zip_code,omitempty"`
 }
+
+type RegistrationListingOptions struct {
+	EstablishmentType *[]string     `url:"establishment_type,omitempty" json:"establishment_type,omitempty"`
+	KNumber           *string       `url:"k_number,omitempty" json:"k_number,omitempty"`
+	PMANumber         *string       `url:"pma_number,omitempty" json:"pma_number,omitempty"`
+	Products          *[]*Product   `url:"products,omitempty" json:"products,omitempty"`
+	ProprietaryName   *[]string     `url:"proprietary_name,omitempty" json:"proprietary_name,omitempty"`
+	Registration      *Registration `url:"registration,omitempty" json:"registration,omitempty"`
+}

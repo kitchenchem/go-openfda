@@ -109,3 +109,46 @@ type Storage struct {
 	SpecialConditions string `json:"special_conditions"`
 	Type              string `json:"type"`
 }
+
+type UDIOptions struct {
+	QueryParameters
+	BrandName                     *string                 `url:"brand_name" json:"brand_name"`
+	CatalogNumber                 *string                 `url:"catalog_number" json:"catalog_number"`
+	CommercialDistributionEndDate *string                 `url:"commercial_distribution_end_date" json:"commercial_distribution_end_date"`
+	CommercialDistributionStatus  *string                 `url:"commercial_distribution_status" json:"commercial_distribution_status"`
+	CompanyName                   *string                 `url:"company_name" json:"company_name"`
+	CustomerContacts              *[]*CustomerContact     `url:"customer_contacts" json:"customer_contacts"`
+	DeviceCountInBasePackage      *int                    `url:"device_count_in_base_package" json:"device_count_in_base_package"`
+	DeviceDescription             *string                 `url:"device_description" json:"device_description"`
+	DeviceSizes                   *[]*DeviceSize          `url:"device_sizes" json:"device_sizes"`
+	GMDNTerms                     *[]*GMDNTerm            `url:"gmdn_terms" json:"gmdn_terms"`
+	HasDonationIDNumber           *bool                   `url:"has_donation_id_number" json:"has_donation_id_number"`
+	HasExpirationDate             *bool                   `url:"has_expiration_date" json:"has_expiration_date"`
+	HasLotOrBatchNumber           *bool                   `url:"has_lot_or_batch_number" json:"has_lot_or_batch_number"`
+	HasManufacturingDate          *bool                   `url:"has_manufacturing_date" json:"has_manufacturing_date"`
+	HasSerialNumber               *bool                   `url:"has_serial_number" json:"has_serial_number"`
+	Identifiers                   *[]*Identifier          `url:"identifiers" json:"identifiers"`
+	IsCombinationProduct          *bool                   `url:"is_combination_product" json:"is_combination_product"`
+	IsDirectMarkingExempt         *bool                   `url:"is_direct_marking_exempt" json:"is_direct_marking_exempt"`
+	IsHCTP                        *bool                   `url:"is_hct_p" json:"is_hct_p"`
+	IsKit                         *bool                   `url:"is_kit" json:"is_kit"`
+	IsLabeledAsNoNRL              *bool                   `url:"is_labeled_as_no_nrl" json:"is_labeled_as_no_nrl"`
+	IsLabeledAsNRL                *bool                   `url:"is_labeled_as_nrl" json:"is_labeled_as_nrl"`
+	IsOTC                         *bool                   `url:"is_otc" json:"is_otc"`
+	IsPMExempt                    *bool                   `url:"is_pm_exempt" json:"is_pm_exempt"`
+	IsRX                          *bool                   `url:"is_rx" json:"is_rx"`
+	IsSingleUse                   *bool                   `url:"is_single_use" json:"is_single_use"`
+	LabelerDUNSNumber             *string                 `url:"labeler_duns_number" json:"labeler_duns_number"`
+	MRISafety                     *string                 `url:"mri_safety" json:"mri_safety"`
+	PremarketSubmissions          *[]*PremarketSubmission `url:"premarket_submissions" json:"premarket_submissions"`
+	ProductCodes                  *[]*ProductCode         `url:"product_codes" json:"product_codes"`
+	PublishDate                   *string                 `url:"publish_date" json:"publish_date"`
+	PublicVersionDate             *string                 `url:"public_version_date" json:"public_version_date"`
+	PublicVersionNumber           *string                 `url:"public_version_number" json:"public_version_number"`
+	PublicVersionStatus           *string                 `url:"public_version_status" json:"public_version_status"`
+	RecordKey                     *string                 `url:"record_key" json:"record_key"`
+	RecordStatus                  *string                 `url:"record_status" json:"record_status"`
+	Sterilization                 *Sterilization          `url:"sterilization" json:"sterilization"`
+	Storage                       *[]*Storage             `url:"storage" json:"storage"`
+	VersionOrModelNumber          *string                 `url:"version_or_model_number" json:"version_or_model_number"`
+}
