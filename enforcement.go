@@ -1,5 +1,11 @@
 package fda
 
+import "net/http"
+
+type EnforcementService struct {
+	client *Client
+}
+
 type Enforcement struct {
 	Address1                 string   `json:"address_1,omitempty"`
 	Address2                 string   `json:"address_2,omitempty"`
@@ -30,6 +36,7 @@ type Enforcement struct {
 }
 
 type EnforcementOptions struct {
+	QueryParameters
 	Address1                 *string  `url:"address_1,omitempty" json:"address_1,omitempty"`
 	Address2                 *string  `url:"address_2,omitempty" json:"address_2,omitempty"`
 	CenterClassificationDate *string  `url:"center_classification_date,omitempty" json:"center_classification_date,omitempty"`
@@ -56,4 +63,25 @@ type EnforcementOptions struct {
 	TerminationDate          *string  `url:"termination_date,omitempty" json:"termination_date,omitempty"`
 	VoluntaryMandated        *string  `url:"voluntary_mandated,omitempty" json:"voluntary_mandated,omitempty"`
 	Meta                     *Meta    `url:"meta,omitempty" json:"meta,omitempty"`
+}
+
+type EnforcementResponse struct {
+	Results []*Enforcement `json:"results,omitempty"`
+	Meta    *Meta          `json:"meta,omitempty"`
+}
+
+func (s *EnforcementService) GetUdi(opt *EnforcementOptions) (EnforcementResponse, *Response, error) {
+	var result EnforcementResponse
+	u := devicePath + enforcementRoute
+	req, err := s.client.NewRequest(http.MethodGet, u, opt)
+	if err != nil {
+		return result, nil, err
+	}
+
+	resp, err := s.client.Do(req, &result)
+	if err != nil {
+		return result, nil, err
+	}
+
+	return result, resp, nil
 }

@@ -1,5 +1,11 @@
 package fda
 
+import "net/http"
+
+type RecallService struct {
+	client *Client
+}
+
 type Recall struct {
 	CfresID               string   `json:"cfres_id,omitempty"`
 	EventDateInitiated    string   `json:"event_date_initiated,omitempty"`
@@ -65,4 +71,27 @@ type RecallOptions struct {
 	RootCauseDescription  *string   `url:"root_cause_description,omitempty" json:"root_cause_description,omitempty"`
 	Action                *string   `url:"action,omitempty" json:"action,omitempty"`
 	Meta                  *Meta     `url:"meta,omitempty" json:"meta,omitempty"`
+}
+
+type RecallResponse struct {
+	Results []*Recall `json:"results,omitempty"`
+	Meta    *Meta     `json:"meta,omitempty"`
+}
+
+func (s *RecallService) GetRecall(opt *RecallOptions) (RecallResponse, *Response, error) {
+	var result RecallResponse
+	u := devicePath + recallRoute
+
+	req, err := s.client.NewRequest(http.MethodGet, u, opt)
+	if err != nil {
+		return result, nil, err
+	}
+
+	resp, err := s.client.Do(req, &result)
+	if err != nil {
+		return result, nil, err
+	}
+
+	return result, resp, nil
+
 }

@@ -1,5 +1,11 @@
 package fda
 
+import "net/http"
+
+type Covid19SerologyService struct {
+	client *Client
+}
+
 type Covid19Serology struct {
 	Manufacturer    string `json:"manufacturer,omitempty"`
 	Device          string `json:"device,omitempty"`
@@ -35,6 +41,7 @@ type Covid19Serology struct {
 }
 
 type Covid19SerologyOptions struct {
+	QueryParameters
 	Manufacturer    *string `url:"manufacturer,omitempty" json:"manufacturer,omitempty"`
 	Device          *string `url:"device,omitempty" json:"device,omitempty"`
 	DatePerformed   *string `url:"date_performed,omitempty" json:"date_performed,omitempty"`
@@ -66,4 +73,27 @@ type Covid19SerologyOptions struct {
 	IgMIgGAgree     *string `url:"igm_igg_agree,omitempty" json:"igm_igg_agree,omitempty"`
 	IgMIgAAgree     *string `url:"igm_iga_agree,omitempty" json:"igm_iga_agree,omitempty"`
 	AntibodyAgree   *string `url:"antibody_agree,omitempty" json:"antibody_agree,omitempty"`
+}
+
+type Covid19SerologyResponse struct {
+	Results []*Covid19Serology `json:"results,omitempty"`
+	Meta    *Meta              `json:"meta,omitempty"`
+}
+
+func (s *Covid19SerologyService) GetCovid19SerologyResponse(opt *Covid19SerologyOptions) (Covid19SerologyResponse, *Response, error) {
+	var result Covid19SerologyResponse
+	u := devicePath + covid19SerologyRoute
+
+	req, err := s.client.NewRequest(http.MethodGet, u, opt)
+	if err != nil {
+		return result, nil, err
+	}
+
+	resp, err := s.client.Do(req, &result)
+	if err != nil {
+		return result, nil, err
+	}
+
+	return result, resp, nil
+
 }

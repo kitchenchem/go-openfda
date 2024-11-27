@@ -1,5 +1,11 @@
 package fda
 
+import "net/http"
+
+type ClassificationService struct {
+	client *Client
+}
+
 type Classification struct {
 	Definition                  string   `json:"definition,omitempty"`
 	DeviceClass                 string   `json:"device_class,omitempty"`
@@ -21,6 +27,7 @@ type Classification struct {
 }
 
 type ClassificationOptions struct {
+	QueryParameters
 	Definition                  *string  `url:"definition,omitempty" json:"definition,omitempty"`
 	DeviceClass                 *string  `url:"device_class,omitempty" json:"device_class,omitempty"`
 	DeviceName                  *string  `url:"device_name,omitempty" json:"device_name,omitempty"`
@@ -38,4 +45,27 @@ type ClassificationOptions struct {
 	SummaryMalfunctionReporting *string  `url:"summary_malfunction_reporting,omitempty" json:"summary_malfunction_reporting,omitempty"`
 	ThirdPartyFlag              *string  `url:"third_party_flag,omitempty" json:"third_party_flag,omitempty"`
 	UnclassifiedReason          *string  `url:"unclassified_reason,omitempty" json:"unclassified_reason,omitempty"`
+}
+
+type ClassificationResponse struct {
+	Results []*Classification `json:"results,omitempty"`
+	Meta    *Meta             `json:"meta,omitempty"`
+}
+
+func (s *ClassificationService) GetClassification(opt *ClassificationOptions) (ClassificationResponse, *Response, error) {
+	var result ClassificationResponse
+	u := devicePath + classificationRoute
+
+	req, err := s.client.NewRequest(http.MethodGet, u, opt)
+	if err != nil {
+		return result, nil, err
+	}
+
+	resp, err := s.client.Do(req, &result)
+	if err != nil {
+		return result, nil, err
+	}
+
+	return result, resp, nil
+
 }

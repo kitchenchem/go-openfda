@@ -1,6 +1,12 @@
 package fda
 
-type RegistrationListing struct {
+import "net/http"
+
+type ReglistService struct {
+	client *Client
+}
+
+type Reglist struct {
 	EstablishmentType []string      `json:"establishment_type,omitempty"`
 	KNumber           string        `json:"k_number,omitempty"`
 	PMANumber         string        `json:"pma_number,omitempty"`
@@ -78,11 +84,35 @@ type USAgent struct {
 	ZipCode          string `json:"zip_code,omitempty"`
 }
 
-type RegistrationListingOptions struct {
+type ReglistOptions struct {
+	QueryParameters
 	EstablishmentType *[]string     `url:"establishment_type,omitempty" json:"establishment_type,omitempty"`
 	KNumber           *string       `url:"k_number,omitempty" json:"k_number,omitempty"`
 	PMANumber         *string       `url:"pma_number,omitempty" json:"pma_number,omitempty"`
 	Products          *[]*Product   `url:"products,omitempty" json:"products,omitempty"`
 	ProprietaryName   *[]string     `url:"proprietary_name,omitempty" json:"proprietary_name,omitempty"`
 	Registration      *Registration `url:"registration,omitempty" json:"registration,omitempty"`
+}
+
+type ReglistResponse struct {
+	Results []*Reglist `json:"results,omitempty"`
+	Meta    *Meta      `json:"meta,omitempty"`
+}
+
+func (s *ReglistService) GetReglist(opt *ReglistOptions) (ReglistResponse, *Response, error) {
+	var result ReglistResponse
+	u := devicePath + reglistRoute
+
+	req, err := s.client.NewRequest(http.MethodGet, u, opt)
+	if err != nil {
+		return result, nil, err
+	}
+
+	resp, err := s.client.Do(req, &result)
+	if err != nil {
+		return result, nil, err
+	}
+
+	return result, resp, nil
+
 }
