@@ -8,6 +8,7 @@ import (
 	"net"
 	"net/http"
 	"net/url"
+	"reflect"
 	"strings"
 	"time"
 
@@ -16,11 +17,9 @@ import (
 
 const (
 	defaultBaseUrl = "https://api.fda.gov/"
-	search         = "search"
-	sort           = "sort"
-	count          = "count"
-	limit          = "limit"
-	skip           = "skip"
+	DevicePath     = "device/"
+	Udi            = "udi.json"
+	F510k          = "510k.json"
 )
 
 type Client struct {
@@ -28,7 +27,15 @@ type Client struct {
 	baseUrl *url.URL
 	key     string
 
-	// Devices *DeviceServic TODO
+	FDA510kService *FDA510kService
+}
+
+type QueryParameters struct {
+	Search string `url:"search,omitempty" json:"search,omitempty"`
+	Sort   string `url:"sort,omitempty" json:"sort,omitempty"`
+	Count  string `url:"count,omitempty" json:"count,omitempty"`
+	Limit  string `url:"limit,omitempty" json:"limit,omitempty"`
+	Skip   string `url:"skip,omitempty" json:"skip,omitempty"`
 }
 
 type RateLimiter interface {
@@ -58,6 +65,8 @@ func NewClient(apiKey string) (*Client, error) {
 
 	client.setBaseURL(defaultBaseUrl)
 
+	client.FDA510kService = &FDA510kService{client: client}
+
 	return client, nil
 }
 
@@ -74,67 +83,90 @@ func (c *Client) setBaseURL(urlStr string) error {
 	return nil
 }
 
-// func (c *Client) NewRequest(path string) (*http.Request, error) {
-// 	urlBuild := *c.baseUrl
-// 	nonescaped, err := url.PathUnescape(path)
-// 	if err != nil {
-// 		return nil, err
-// 	}
-
-// 	urlBuild.RawPath = c.baseUrl.Path + path
-// 	fmt.Printf("raw: %s\n", urlBuild.RawPath)
-// 	urlBuild.Path = c.baseUrl.Path + nonescaped
-// 	fmt.Printf("path: %s\n", urlBuild.Path)
-// 	fmt.Printf("str: %s\n", urlBuild.String())
-
-// 	fmt.Printf("url built: %s      --------", &urlBuild)
-
-// 	reqHeaders := make(http.Header)
-// 	reqHeaders.Set("Accept", "application/json")
-
-// 	req, err := http.NewRequest("GET", urlBuild.String(), nil)
-// 	if err != nil {
-// 		return nil, err
-// 	}
-
-// 	for k, v := range reqHeaders {
-// 		req.Header[k] = v
-// 	}
-
-// 	return req, nil
-// }
-
-func (c *Client) NewRequest(path string, opt interface{}) (*http.Request, error) {
-	urlBuild := *c.baseUrl
-
-	pathAndQuery := strings.SplitN(path, "?", 2)
-	basePath := pathAndQuery[0]
-
-	nonescaped, err := url.PathUnescape(basePath)
+func (c *Client) NewRequest(method, path string, opt interface{}) (*http.Request, error) {
+	u := *c.baseUrl
+	unescaped, err := url.PathUnescape(path)
 	if err != nil {
 		return nil, err
 	}
-	urlBuild.Path = c.baseUrl.Path + nonescaped
-
-	if len(pathAndQuery) > 1 {
-		urlBuild.RawQuery = pathAndQuery[1]
-	}
-
+	u.RawPath = c.baseUrl.Path + path
+	u.Path = c.baseUrl.Path + unescaped
 	reqHeaders := make(http.Header)
 	reqHeaders.Set("Accept", "application/json")
-	fmt.Printf("str: %s\n", urlBuild.String())
 
-	// opt represents options available to en endpoint //TODO
 	if opt != nil {
+		v := reflect.ValueOf(opt)
+		t := v.Type()
+		if t.Kind() == reflect.Ptr {
+			v = v.Elem()
+			t = v.Type()
+		}
+
 		q, err := query.Values(opt)
 		if err != nil {
 			return nil, err
 		}
-		urlBuild.RawQuery = q.Encode()
-		fmt.Printf("url string: %s", urlBuild.String())
+
+		searchParts := []string{}
+		baseQuery := make(url.Values)
+
+		baseType := reflect.TypeOf(QueryParameters{})
+		baseParams := map[string]bool{}
+		for i := 0; i < baseType.NumField(); i++ {
+			field := baseType.Field(i)
+			if tag := field.Tag.Get("url"); tag != "" {
+				paramName := strings.Split(tag, ",")[0]
+				baseParams[paramName] = true
+				if val := q.Get(paramName); val != "" {
+					baseQuery.Set(paramName, val)
+				}
+			}
+		}
+
+		for i := 0; i < t.NumField(); i++ {
+			field := t.Field(i)
+			if tag := field.Tag.Get("json"); tag != "" && !baseParams[strings.Split(tag, ",")[0]] {
+				paramName := strings.Split(tag, ",")[0]
+				fieldValue := v.Field(i)
+
+				if fieldValue.Kind() == reflect.Ptr && !fieldValue.IsNil() {
+					fieldValue = fieldValue.Elem()
+				}
+
+				if !fieldValue.IsZero() {
+					searchParts = append(searchParts, paramName+":"+fieldValue.String())
+				}
+			}
+		}
+
+		queryParts := []string{}
+
+		for key, values := range baseQuery {
+			if key != "search" {
+				for _, value := range values {
+					queryParts = append(queryParts, url.QueryEscape(key)+"="+url.QueryEscape(value))
+				}
+			}
+		}
+
+		if len(searchParts) > 0 {
+			searchQuery := strings.Join(searchParts, " AND ")
+			if existing := baseQuery.Get("search"); existing != "" {
+				searchQuery = existing + " AND " + searchQuery
+			}
+			escapedParts := []string{}
+			for _, part := range strings.Split(searchQuery, ":") {
+				escapedParts = append(escapedParts, url.QueryEscape(part))
+			}
+			searchParam := "search=" + strings.Join(escapedParts, ":")
+			queryParts = append(queryParts, searchParam)
+		}
+
+		u.RawQuery = strings.Join(queryParts, "&")
+		fmt.Printf("final query %s\n", u.String())
 	}
 
-	req, err := http.NewRequest("GET", urlBuild.String(), nil)
+	req, err := http.NewRequest(method, u.String(), nil)
 	if err != nil {
 		return nil, err
 	}
@@ -157,7 +189,6 @@ func newResponse(r *http.Response) *Response {
 
 func (c *Client) Do(req *http.Request, w interface{}) (*Response, error) {
 
-	// if w implements io writer interface for the response body to be written to it without trying to first decode it.
 	var apiKey string
 
 	if c.key != "" {
@@ -170,20 +201,16 @@ func (c *Client) Do(req *http.Request, w interface{}) (*Response, error) {
 		return nil, err
 	}
 
-	//TODO handling for daily limit breach w/ and w/out token.
-
 	defer resp.Body.Close()
 	defer io.Copy(io.Discard, resp.Body)
-
-	//TODO make response type, methods.
 
 	response := newResponse(resp)
 
 	if w != nil {
 		if x, ok := w.(io.Writer); ok {
-			_, err = io.Copy(x, resp.Body) // need original response, not Response type
+			_, err = io.Copy(x, resp.Body)
 		} else {
-			err = json.NewDecoder(resp.Body).Decode(w) //same here
+			err = json.NewDecoder(resp.Body).Decode(w)
 		}
 	}
 

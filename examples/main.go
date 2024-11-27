@@ -3,6 +3,7 @@ package main
 import (
 	"fmt"
 	"log"
+	"net/http"
 
 	fda "github.com/kitchenchem/go-openFda"
 )
@@ -13,10 +14,16 @@ func main() {
 		log.Fatal(err)
 
 	}
+	path := fda.DevicePath + fda.F510k
 
-	var nilinterface any // just for testing purposes
+	params := &fda.FDA510kOptions{
+		QueryParameters: fda.QueryParameters{
+			Limit: "1",
+		},
+		AdvisoryCommittee: fda.Ptr("an"),
+	}
 
-	req, err := x.NewRequest("device/510k.json?search=advisory_committee:cv&limit=1", nilinterface)
+	req, err := x.NewRequest(http.MethodGet, path, params)
 	if err != nil {
 		log.Fatal(err)
 	}
