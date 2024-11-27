@@ -15,11 +15,19 @@ import (
 	"github.com/google/go-querystring/query"
 )
 
+// endpoint.json seems to be the only option available.
 const (
-	defaultBaseUrl = "https://api.fda.gov/"
-	DevicePath     = "device/"
-	Udi            = "udi.json"
-	F510k          = "510k.json"
+	defaultBaseUrl       = "https://api.fda.gov/"
+	devicePath           = "device/"
+	udiRoute             = "udi.json"
+	fda510kRoute         = "510k.json"
+	classificationRoute  = "classification.json"
+	covid19SerologyRoute = "covid19serology.json"
+	enforcementRoute     = "enforcement.json"
+	eventRoute           = "event.json"
+	pmaRoute             = "pma.json"
+	recallRoute          = "recall.json"
+	reglistRoute         = "reglist.json"
 )
 
 type Client struct {
@@ -27,7 +35,16 @@ type Client struct {
 	baseUrl *url.URL
 	key     string
 
-	FDA510kService *FDA510kService
+	// Services for different parts of the FDA Api
+	Fda510k         *Fda510kService
+	Classification  *ClassificationService
+	Enforcement     *EnforcementService
+	Event           *EventService
+	Pma             *PmaService
+	Recall          *RecallService
+	Reglist         *ReglistService //Registrations and Listings
+	Covid19Serology *Covid19SerologyService
+	Udi             *UdiService
 }
 
 type QueryParameters struct {
@@ -43,10 +60,10 @@ type RateLimiter interface {
 }
 
 func NewClient(apiKey string) (*Client, error) {
-	client := &Client{key: apiKey}
+	c := &Client{key: apiKey}
 
 	// Create an http.Client with some sensible wait defaults for various responses
-	client.client = &http.Client{
+	c.client = &http.Client{
 		Timeout: 15 * time.Second,
 		Transport: &http.Transport{
 			TLSHandshakeTimeout: 10 * time.Second,
@@ -63,11 +80,20 @@ func NewClient(apiKey string) (*Client, error) {
 		},
 	}
 
-	client.setBaseURL(defaultBaseUrl)
+	c.setBaseURL(defaultBaseUrl)
 
-	client.FDA510kService = &FDA510kService{client: client}
+	// Public Services
+	c.Fda510k = &Fda510kService{client: c}
+	c.Classification = &ClassificationService{client: c}
+	c.Enforcement = &EnforcementService{client: c}
+	c.Event = &EventService{client: c}
+	c.Pma = &PmaService{client: c}
+	c.Recall = &RecallService{client: c}
+	c.Reglist = &ReglistService{client: c}
+	c.Covid19Serology = &Covid19SerologyService{client: c}
+	c.Udi = &UdiService{client: c}
 
-	return client, nil
+	return c, nil
 }
 
 func (c *Client) setBaseURL(urlStr string) error {

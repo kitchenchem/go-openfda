@@ -24,7 +24,7 @@ type OpenFDA struct {
 	ProductNDC                 []string `json:"product_ndc,omitempty"`
 	ProductType                []string `json:"product_type,omitempty"`
 	RegistrationNumber         []string `json:"registration_number,omitempty"`
-	RegulationNumber           []string `json:"regulation_number,omitempty"`
+	RegulationNumber           string   `json:"regulation_number,omitempty"`
 	Route                      []string `json:"route,omitempty"`
 	RxCUI                      []string `json:"rxcui,omitempty"`
 	RxString                   []string `json:"rxstring,omitempty"`

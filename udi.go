@@ -1,12 +1,14 @@
 package fda
 
+import "net/http"
+
 // https://open.fda.gov/apis/device/udi/
 
 type UdiService struct {
 	client *Client
 }
 
-type UDI struct {
+type Udi struct {
 	BrandName                     string                 `json:"brand_name"`
 	CatalogNumber                 string                 `json:"catalog_number"`
 	CommercialDistributionEndDate string                 `json:"commercial_distribution_end_date"`
@@ -110,7 +112,7 @@ type Storage struct {
 	Type              string `json:"type"`
 }
 
-type UDIOptions struct {
+type UdiOptions struct {
 	QueryParameters
 	BrandName                     *string                 `url:"brand_name" json:"brand_name"`
 	CatalogNumber                 *string                 `url:"catalog_number" json:"catalog_number"`
@@ -151,4 +153,26 @@ type UDIOptions struct {
 	Sterilization                 *Sterilization          `url:"sterilization" json:"sterilization"`
 	Storage                       *[]*Storage             `url:"storage" json:"storage"`
 	VersionOrModelNumber          *string                 `url:"version_or_model_number" json:"version_or_model_number"`
+}
+
+type UdiResponse struct {
+	Results []*Udi `json:"results,omitempty"`
+	Meta    *Meta  `json:"meta,omitempty"`
+}
+
+func (s *UdiService) GetUdi(opt *UdiOptions) (UdiResponse, *Response, error) {
+	var result UdiResponse
+	u := devicePath + udiRoute
+	req, err := s.client.NewRequest(http.MethodGet, u, opt)
+	if err != nil {
+		return result, nil, err
+	}
+
+	resp, err := s.client.Do(req, &result)
+	if err != nil {
+		return result, nil, err
+	}
+
+	return result, resp, nil
+
 }

@@ -2,11 +2,11 @@ package fda
 
 import "net/http"
 
-type FDA510kService struct {
+type Fda510kService struct {
 	client *Client
 }
 
-type FDA510k struct {
+type Fda510k struct {
 	Address1                string   `json:"address_1,omitempty"`
 	Address2                string   `json:"address_2,omitempty"`
 	AdvisoryCommittee       string   `json:"advisory_committee,omitempty"`
@@ -34,7 +34,7 @@ type FDA510k struct {
 	Meta                    *Meta    `json:"meta,omitempty"`
 }
 
-type FDA510kOptions struct {
+type Fda510kOptions struct {
 	QueryParameters
 	Address1                *string  `url:"address_1,omitempty" json:"address_1,omitempty"`
 	Address2                *string  `url:"address_2,omitempty" json:"address_2,omitempty"`
@@ -63,18 +63,25 @@ type FDA510kOptions struct {
 	Meta                    *Meta    `url:"meta,omitempty" json:"meta,omitempty"`
 }
 
-func (s *FDA510kService) Get510k(opt *FDA510kOptions) ([]*FDA510k, *Response, error) {
-	u := DevicePath + F510k
+type Fda510kResponse struct {
+	Results []*Fda510k `json:"results,omitempty"`
+	Meta    *Meta      `json:"meta,omitempty"`
+}
+
+func (s *Fda510kService) Get510k(opt *Fda510kOptions) (Fda510kResponse, *Response, error) {
+	var result Fda510kResponse
+	u := devicePath + fda510kRoute
 
 	req, err := s.client.NewRequest(http.MethodGet, u, opt)
 	if err != nil {
-		return nil, nil, err
+		return result, nil, err
 	}
 
-	var f []*FDA510k
-	resp, err := s.client.Do(req, &f)
+	resp, err := s.client.Do(req, &result)
 	if err != nil {
-		return nil, nil, err
+		return result, nil, err
 	}
-	return f, resp, nil
+
+	return result, resp, nil
+
 }

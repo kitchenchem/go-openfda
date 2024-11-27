@@ -1,6 +1,12 @@
 package fda
 
-type PMA struct {
+import "net/http"
+
+type PmaService struct {
+	client *Client
+}
+
+type Pma struct {
 	AdvisoryCommittee            string   `json:"advisory_committee,omitempty"`
 	AdvisoryCommitteeDescription string   `json:"advisory_committee_description,omitempty"`
 	AOStatement                  string   `json:"ao_statement,omitempty"`
@@ -27,7 +33,8 @@ type PMA struct {
 	ZipExt                       string   `json:"zip_ext,omitempty"`
 }
 
-type PMAOptions struct {
+type PmaOptions struct {
+	QueryParameters
 	AdvisoryCommittee            *string  `url:"advisory_committee,omitempty" json:"advisory_committee,omitempty"`
 	AdvisoryCommitteeDescription *string  `url:"advisory_committee_description,omitempty" json:"advisory_committee_description,omitempty"`
 	AOStatement                  *string  `url:"ao_statement,omitempty" json:"ao_statement,omitempty"`
@@ -52,4 +59,27 @@ type PMAOptions struct {
 	TradeName                    *string  `url:"trade_name,omitempty" json:"trade_name,omitempty"`
 	Zip                          *string  `url:"zip,omitempty" json:"zip,omitempty"`
 	ZipExt                       *string  `url:"zip_ext,omitempty" json:"zip_ext,omitempty"`
+}
+
+type PmaResponse struct {
+	Results []*Pma `json:"results,omitempty"`
+	Meta    *Meta  `json:"meta,omitempty"`
+}
+
+func (s *PmaService) Get510k(opt *PmaOptions) (PmaResponse, *Response, error) {
+	var result PmaResponse
+	u := devicePath + pmaRoute
+
+	req, err := s.client.NewRequest(http.MethodGet, u, opt)
+	if err != nil {
+		return result, nil, err
+	}
+
+	resp, err := s.client.Do(req, &result)
+	if err != nil {
+		return result, nil, err
+	}
+
+	return result, resp, nil
+
 }
