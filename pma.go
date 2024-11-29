@@ -66,7 +66,7 @@ type PmaResponse struct {
 	Meta    *Meta  `json:"meta,omitempty"`
 }
 
-func (s *PmaService) Get510k(opt *PmaOptions) (PmaResponse, *Response, error) {
+func (s *PmaService) GetPma(opt *PmaOptions) (PmaResponse, *Response, error) {
 	var result PmaResponse
 	u := devicePath + pmaRoute
 

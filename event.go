@@ -117,6 +117,7 @@ type Patient struct {
 	SequenceNumberTreatment []string   `json:"sequence_number_treatment,omitempty"`
 }
 type EventOptions struct {
+	QueryParameters
 	AdverseEventFlag         *string     `url:"adverse_event_flag" json:"adverse_event_flag,omitempty"`
 	DateFacilityAware        *time.Time  `url:"date_facility_aware" json:"date_facility_aware,omitempty"`
 	DateManufacturerReceived *time.Time  `url:"date_manufacturer_received" json:"date_manufacturer_received,omitempty"`
@@ -174,7 +175,7 @@ type EventResponse struct {
 	Meta    *Meta    `json:"meta,omitempty"`
 }
 
-func (s *EventService) GetEvent(opt EventOptions) (EventResponse, *Response, error) {
+func (s *EventService) GetEvent(opt *EventOptions) (EventResponse, *Response, error) {
 	var result EventResponse
 	u := devicePath + eventRoute
 

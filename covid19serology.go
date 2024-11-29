@@ -80,7 +80,7 @@ type Covid19SerologyResponse struct {
 	Meta    *Meta              `json:"meta,omitempty"`
 }
 
-func (s *Covid19SerologyService) GetCovid19SerologyResponse(opt *Covid19SerologyOptions) (Covid19SerologyResponse, *Response, error) {
+func (s *Covid19SerologyService) GetCovid19Serology(opt *Covid19SerologyOptions) (Covid19SerologyResponse, *Response, error) {
 	var result Covid19SerologyResponse
 	u := devicePath + covid19SerologyRoute
 

@@ -70,7 +70,7 @@ type EnforcementResponse struct {
 	Meta    *Meta          `json:"meta,omitempty"`
 }
 
-func (s *EnforcementService) GetUdi(opt *EnforcementOptions) (EnforcementResponse, *Response, error) {
+func (s *EnforcementService) GetEnforcement(opt *EnforcementOptions) (EnforcementResponse, *Response, error) {
 	var result EnforcementResponse
 	u := devicePath + enforcementRoute
 	req, err := s.client.NewRequest(http.MethodGet, u, opt)
