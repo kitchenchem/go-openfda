@@ -1,13 +1,35 @@
 # go-openfda
-A Open FDA API client to make using the FDA's data easy with go. 
+A Open FDA API client to make using the FDA's data easy with go.
 
 ## Coverage
-Initial coverage was worked on per my specific needs and only covers the devices endpoints. 
+Only handles the devices endpoint. More will be added as I need them in my personal work.
 
-# Devices
--[x] Udi
+## TODO
+- authorized requests
+- paginiation w/ search after
+- rate limiting
+- backoff mechanism
+- nice printing of fda objects
+- total query limit reaches
+- graceful error  handling
+
+# Devices Endpoints
+-[x] 510k
+-[x] Classification
+-[x] Covid19Serology
+-[x] Enforcement
+-[x] Events
+-[x] PMA
+-[x] Recall
+-[x] Registrations and Listing
+-[x] UDI
 
 ## Usage
+
+Make writing queries to the openFDA api easier with go. 
+
+If you need more heavy duty use see:
+https://open.fda.gov/apis/downloads/
 
 ## Issues 
 
@@ -15,10 +37,7 @@ Initial coverage was worked on per my specific needs and only covers the devices
 Nick Janapol (nickjanapol@gmail.com)
 
 ## Contributing 
-Contributions are welcome. I haven't flushed out any parameters; contact me with questions or just submit a pull request. 
+Contributions are welcome. See 'TODO' or contact me with questions.
 
 ## License
-Idk yet but it will be a do whatever you want with it type license. 
-
-## Other 
-I hadn't ever used go before so big thanks to the go-gitlab project for helping me learn and heavily influencing structure.  
+Idk yet but it will be a do whatever you want with it type license.
