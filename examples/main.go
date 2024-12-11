@@ -8,7 +8,7 @@ import (
 )
 
 func main() {
-	x, err := fda.NewClient("")
+	x, err := fda.NewClient("Fgvc2fhDheU0UoOT2ckZBMJxSDHc3N5Ye2IIzQEc")
 	if err != nil {
 		log.Fatal(err)
 
