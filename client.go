@@ -33,7 +33,8 @@ const (
 type Client struct {
 	client  *http.Client
 	baseUrl *url.URL
-	key     string
+	// https://open.fda.gov/apis/authentication/
+	key string
 
 	// Services for different parts of the FDA Api
 	Fda510k         *Fda510kService
@@ -107,6 +108,11 @@ func (c *Client) setBaseURL(urlStr string) error {
 	}
 	c.baseUrl = baseURL
 	return nil
+}
+
+func (c *Client) BaseUrl() *url.URL {
+	u := *c.baseUrl
+	return &u
 }
 
 func (c *Client) NewRequest(method, path string, opt interface{}) (*http.Request, error) {
@@ -219,7 +225,7 @@ func (c *Client) Do(req *http.Request, w interface{}) (*Response, error) {
 
 	if c.key != "" {
 		apiKey = c.key
-		req.Header.Set("Authorization", "Key "+apiKey) // TODO make to be the correct header text for fda
+		req.Header.Set("Authorization", "Basic "+apiKey)
 	}
 
 	resp, err := c.client.Do(req)
@@ -278,10 +284,10 @@ func CheckResponse(r *http.Response) error {
 
 		var raw interface{}
 		if err := json.Unmarshal(data, &raw); err != nil {
-			errorResponse.Message = fmt.Sprintf("failed to parse unknown error format: %s", data)
+			errorResponse.Message = fmt.Sprintf("unknown error format: %s", data)
 		} else {
 
-			return fmt.Errorf("failed to parse unexpected error type: %T", raw)
+			errorResponse.Message = fmt.Sprintf("raw error: %T", raw)
 		}
 	}
 

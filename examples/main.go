@@ -3,12 +3,13 @@ package main
 import (
 	"fmt"
 	"log"
+	"os"
 
 	fda "github.com/kitchenchem/go-openFda"
 )
 
 func main() {
-	x, err := fda.NewClient("")
+	x, err := fda.NewClient(os.Getenv("FDAKEY"))
 	if err != nil {
 		log.Fatal(err)
 

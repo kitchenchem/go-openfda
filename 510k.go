@@ -1,6 +1,8 @@
 package fda
 
-import "net/http"
+import (
+	"net/http"
+)
 
 type Fda510kService struct {
 	client *Client
@@ -71,7 +73,6 @@ type Fda510kResponse struct {
 func (s *Fda510kService) Get510k(opt *Fda510kOptions) (Fda510kResponse, *Response, error) {
 	var result Fda510kResponse
 	u := devicePath + fda510kRoute
-
 	req, err := s.client.NewRequest(http.MethodGet, u, opt)
 	if err != nil {
 		return result, nil, err
