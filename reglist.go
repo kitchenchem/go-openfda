@@ -99,11 +99,11 @@ type ReglistResponse struct {
 	Meta    *Meta      `json:"meta,omitempty"`
 }
 
-func (s *ReglistService) GetReglist(opt *ReglistOptions) (ReglistResponse, *Response, error) {
+func (s *ReglistService) GetReglist(opt *ReglistOptions, options ...RequestOptionFunc) (ReglistResponse, *Response, error) {
 	var result ReglistResponse
 	u := devicePath + reglistRoute
 
-	req, err := s.client.NewRequest(http.MethodGet, u, opt)
+	req, err := s.client.NewRequest(http.MethodGet, u, opt, options)
 	if err != nil {
 		return result, nil, err
 	}

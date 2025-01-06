@@ -66,11 +66,11 @@ type PmaResponse struct {
 	Meta    *Meta  `json:"meta,omitempty"`
 }
 
-func (s *PmaService) GetPma(opt *PmaOptions) (PmaResponse, *Response, error) {
+func (s *PmaService) GetPma(opt *PmaOptions, options ...RequestOptionFunc) (PmaResponse, *Response, error) {
 	var result PmaResponse
 	u := devicePath + pmaRoute
 
-	req, err := s.client.NewRequest(http.MethodGet, u, opt)
+	req, err := s.client.NewRequest(http.MethodGet, u, opt, options)
 	if err != nil {
 		return result, nil, err
 	}

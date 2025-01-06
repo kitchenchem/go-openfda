@@ -78,11 +78,11 @@ type RecallResponse struct {
 	Meta    *Meta     `json:"meta,omitempty"`
 }
 
-func (s *RecallService) GetRecall(opt *RecallOptions) (RecallResponse, *Response, error) {
+func (s *RecallService) GetRecall(opt *RecallOptions, options ...RequestOptionFunc) (RecallResponse, *Response, error) {
 	var result RecallResponse
 	u := devicePath + recallRoute
 
-	req, err := s.client.NewRequest(http.MethodGet, u, opt)
+	req, err := s.client.NewRequest(http.MethodGet, u, opt, options)
 	if err != nil {
 		return result, nil, err
 	}

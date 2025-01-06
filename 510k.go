@@ -70,10 +70,10 @@ type Fda510kResponse struct {
 	Meta    *Meta      `json:"meta,omitempty"`
 }
 
-func (s *Fda510kService) Get510k(opt *Fda510kOptions) (Fda510kResponse, *Response, error) {
+func (s *Fda510kService) Get510k(opt *Fda510kOptions, options ...RequestOptionFunc) (Fda510kResponse, *Response, error) {
 	var result Fda510kResponse
 	u := devicePath + fda510kRoute
-	req, err := s.client.NewRequest(http.MethodGet, u, opt)
+	req, err := s.client.NewRequest(http.MethodGet, u, opt, options)
 	if err != nil {
 		return result, nil, err
 	}

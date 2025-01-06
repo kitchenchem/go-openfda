@@ -52,11 +52,11 @@ type ClassificationResponse struct {
 	Meta    *Meta             `json:"meta,omitempty"`
 }
 
-func (s *ClassificationService) GetClassification(opt *ClassificationOptions) (ClassificationResponse, *Response, error) {
+func (s *ClassificationService) GetClassification(opt *ClassificationOptions, options ...RequestOptionFunc) (ClassificationResponse, *Response, error) {
 	var result ClassificationResponse
 	u := devicePath + classificationRoute
 
-	req, err := s.client.NewRequest(http.MethodGet, u, opt)
+	req, err := s.client.NewRequest(http.MethodGet, u, opt, options)
 	if err != nil {
 		return result, nil, err
 	}

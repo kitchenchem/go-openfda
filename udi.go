@@ -160,10 +160,10 @@ type UdiResponse struct {
 	Meta    *Meta  `json:"meta,omitempty"`
 }
 
-func (s *UdiService) GetUdi(opt *UdiOptions) (UdiResponse, *Response, error) {
+func (s *UdiService) GetUdi(opt *UdiOptions, options ...RequestOptionFunc) (UdiResponse, *Response, error) {
 	var result UdiResponse
 	u := devicePath + udiRoute
-	req, err := s.client.NewRequest(http.MethodGet, u, opt)
+	req, err := s.client.NewRequest(http.MethodGet, u, opt, options)
 	if err != nil {
 		return result, nil, err
 	}

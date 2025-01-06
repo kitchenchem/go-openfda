@@ -175,11 +175,11 @@ type EventResponse struct {
 	Meta    *Meta    `json:"meta,omitempty"`
 }
 
-func (s *EventService) GetEvent(opt *EventOptions) (EventResponse, *Response, error) {
+func (s *EventService) GetEvent(opt *EventOptions, options ...RequestOptionFunc) (EventResponse, *Response, error) {
 	var result EventResponse
 	u := devicePath + eventRoute
 
-	req, err := s.client.NewRequest(http.MethodGet, u, opt)
+	req, err := s.client.NewRequest(http.MethodGet, u, opt, options)
 	if err != nil {
 		return result, nil, err
 	}
